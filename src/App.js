@@ -455,17 +455,6 @@ const App = () => {
               </div>
             </div>
 
-            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <h4 className="font-medium text-yellow-800 mb-2">
-                Important Note
-              </h4>
-              <p className="text-sm text-yellow-700">
-                These predictions are for research purposes only and should not
-                be used for clinical decision-making. Always consult with
-                healthcare professionals for medical advice.
-              </p>
-            </div>
-
             <div className="mt-4 text-xs text-gray-500">
               Prediction generated at:{" "}
               {new Date(prediction.timestamp).toLocaleString()}
