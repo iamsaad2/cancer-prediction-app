@@ -18,6 +18,7 @@ const App = () => {
   // Fetch available cancer types on component mount
   useEffect(() => {
     fetchCancerTypes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchCancerTypes = async () => {
@@ -26,9 +27,7 @@ const App = () => {
       const data = await response.json();
       setCancerTypes(data.cancer_types);
     } catch (err) {
-      setError(
-        "Failed to fetch cancer types. The API may be starting up - please wait 30-60 seconds and refresh."
-      );
+      setError("Failed to fetch cancer types");
     }
   };
 
@@ -37,6 +36,7 @@ const App = () => {
     if (selectedCancer) {
       fetchRequiredInputs(selectedCancer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCancer]);
 
   const fetchRequiredInputs = async (cancerType) => {
@@ -373,9 +373,7 @@ const App = () => {
                 disabled={loading}
                 className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {loading
-                  ? "Predicting... (This may take 30-60 seconds)"
-                  : "Predict Metastasis Risk"}
+                {loading ? "Predicting..." : "Predict Metastasis Risk"}
               </button>
             </div>
           </div>
@@ -455,6 +453,17 @@ const App = () => {
                   </p>
                 </div>
               </div>
+            </div>
+
+            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <h4 className="font-medium text-yellow-800 mb-2">
+                Important Note
+              </h4>
+              <p className="text-sm text-yellow-700">
+                These predictions are for research purposes only and should not
+                be used for clinical decision-making. Always consult with
+                healthcare professionals for medical advice.
+              </p>
             </div>
 
             <div className="mt-4 text-xs text-gray-500">
