@@ -56,7 +56,6 @@ const FIELD_LABELS = {
   fuhrman_grade: "Fuhrman Grade",
   ca125_status: "CA-125 Status",
   surgical_grade: "Surgical Grade",
-  afp_status: "AFP Status",
   hcg_status: "HCG Status",
   ldh_status: "LDH Status",
   mate_other: "Other Site Metastasis",
@@ -174,7 +173,6 @@ const styles = {
   aimBtn: (active) => ({
     padding: "12px 28px",
     borderRadius: 10,
-    border: "none",
     cursor: "pointer",
     fontSize: 14,
     fontWeight: 600,
