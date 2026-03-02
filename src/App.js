@@ -917,16 +917,19 @@ const App = () => {
             <div
               style={{
                 ...styles.resultsGrid,
-                ...(window.innerWidth < 640
+                ...(window.innerWidth < 640 ||
+                !prediction.predictions.logistic_regression
                   ? { gridTemplateColumns: "1fr" }
                   : {}),
               }}
             >
-              <ResultCard
-                title="Logistic Regression"
-                color="#38bdf8"
-                data={prediction.predictions.logistic_regression}
-              />
+              {prediction.predictions.logistic_regression && (
+                <ResultCard
+                  title="Logistic Regression"
+                  color="#38bdf8"
+                  data={prediction.predictions.logistic_regression}
+                />
+              )}
               <ResultCard
                 title="Random Forest"
                 color="#a78bfa"
