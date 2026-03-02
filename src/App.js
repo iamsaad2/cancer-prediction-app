@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 // ── Constants ────────────────────────────────────────────────────────────
 
@@ -83,7 +83,13 @@ const FIELD_OPTIONS = {
   grade: ["Grade 1", "Grade 2", "Grade 3", "Grade 4"],
 
   // Prostate
-  gleason: ["Grade group 1", "Grade group 2", "Grade group 3", "Grade group 4", "Grade group 5"],
+  gleason: [
+    "Grade group 1",
+    "Grade group 2",
+    "Grade group 3",
+    "Grade group 4",
+    "Grade group 5",
+  ],
 
   // Rectum
   cea_status: ["Negative/normal; within normal limits", "Positive/elevated"],
@@ -272,39 +278,79 @@ function PredictionTimer({ estimatedSeconds }) {
   };
 
   return (
-    <div style={{
-      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      padding: "40px 20px", gap: 20,
-    }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "40px 20px",
+        gap: 20,
+      }}
+    >
       <div style={{ position: "relative", width: 96, height: 96 }}>
-        <svg width="96" height="96" viewBox="0 0 96 96" style={{ transform: "rotate(-90deg)" }}>
-          <circle cx="48" cy="48" r={radius} fill="none" stroke="#e8efe8" strokeWidth="6" />
+        <svg
+          width="96"
+          height="96"
+          viewBox="0 0 96 96"
+          style={{ transform: "rotate(-90deg)" }}
+        >
           <circle
-            cx="48" cy="48" r={radius} fill="none"
-            stroke="#1a6b4f" strokeWidth="6"
+            cx="48"
+            cy="48"
+            r={radius}
+            fill="none"
+            stroke="#e8efe8"
+            strokeWidth="6"
+          />
+          <circle
+            cx="48"
+            cy="48"
+            r={radius}
+            fill="none"
+            stroke="#1a6b4f"
+            strokeWidth="6"
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={dashOffset}
             style={{ transition: "stroke-dashoffset 1s linear" }}
           />
         </svg>
-        <div style={{
-          position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 20, fontWeight: 700, color: "#1a6b4f", fontFamily: "'Outfit', sans-serif",
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 20,
+            fontWeight: 700,
+            color: "#1a6b4f",
+            fontFamily: "'Outfit', sans-serif",
+          }}
+        >
           {formatTime(elapsed)}
         </div>
       </div>
       <div style={{ textAlign: "center" }}>
-        <div style={{
-          fontSize: 14, fontWeight: 600, color: "#1a1a1a", fontFamily: "'Outfit', sans-serif",
-          marginBottom: 4,
-        }}>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: 600,
+            color: "#1a1a1a",
+            fontFamily: "'Outfit', sans-serif",
+            marginBottom: 4,
+          }}
+        >
           Running prediction model
         </div>
-        <div style={{
-          fontSize: 12, color: "#888", fontFamily: "'Outfit', sans-serif",
-        }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: "#888",
+            fontFamily: "'Outfit', sans-serif",
+          }}
+        >
           Estimated time: ~{estimatedSeconds}s
         </div>
       </div>
@@ -315,18 +361,37 @@ function PredictionTimer({ estimatedSeconds }) {
 // ── Field Input Component ────────────────────────────────────────────────
 
 function FieldInput({ field, fieldDef, value, onChange }) {
-  const label = FIELD_LABELS[field.key] || field.key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  const label =
+    FIELD_LABELS[field.key] ||
+    field.key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
   const selectStyle = {
-    width: "100%", padding: "13px 16px", borderRadius: 10,
-    border: "1.5px solid #ddd", background: "#fff", color: "#1a1a1a",
-    fontSize: 15, fontFamily: "'Outfit', sans-serif", fontWeight: 400,
-    appearance: "none", cursor: "pointer", transition: "all 0.2s ease",
+    width: "100%",
+    padding: "13px 16px",
+    borderRadius: 10,
+    border: "1.5px solid #ddd",
+    background: "#fff",
+    color: "#1a1a1a",
+    fontSize: 15,
+    fontFamily: "'Outfit', sans-serif",
+    fontWeight: 400,
+    appearance: "none",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
   };
-  const inputStyle = { ...selectStyle, cursor: "text", boxSizing: "border-box" };
+  const inputStyle = {
+    ...selectStyle,
+    cursor: "text",
+    boxSizing: "border-box",
+  };
   const labelStyle = {
-    display: "block", fontSize: 13, fontWeight: 600, color: "#444",
-    marginBottom: 6, fontFamily: "'Outfit', sans-serif", letterSpacing: "0.01em",
+    display: "block",
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#444",
+    marginBottom: 6,
+    fontFamily: "'Outfit', sans-serif",
+    letterSpacing: "0.01em",
   };
 
   if (field.type === "select") {
@@ -335,14 +400,32 @@ function FieldInput({ field, fieldDef, value, onChange }) {
       <div>
         <label style={labelStyle}>{label}</label>
         <div style={{ position: "relative" }}>
-          <select style={selectStyle} value={value || ""} onChange={(e) => onChange(e.target.value)} required>
+          <select
+            style={selectStyle}
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            required
+          >
             <option value="">Select {label}</option>
-            {options.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
+            {options.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
           </select>
-          <span style={{
-            position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
-            pointerEvents: "none", color: "#999", fontSize: 11,
-          }}>▼</span>
+          <span
+            style={{
+              position: "absolute",
+              right: 14,
+              top: "50%",
+              transform: "translateY(-50%)",
+              pointerEvents: "none",
+              color: "#999",
+              fontSize: 11,
+            }}
+          >
+            ▼
+          </span>
         </div>
       </div>
     );
@@ -352,10 +435,15 @@ function FieldInput({ field, fieldDef, value, onChange }) {
     <div>
       <label style={labelStyle}>{label}</label>
       <input
-        type="number" style={inputStyle} value={value || ""}
+        type="number"
+        style={inputStyle}
+        value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={`Enter ${label.toLowerCase()}`} required
-        min={field.min} max={field.max} step={field.step}
+        placeholder={`Enter ${label.toLowerCase()}`}
+        required
+        min={field.min}
+        max={field.max}
+        step={field.step}
       />
     </div>
   );
@@ -368,43 +456,145 @@ function ResultCard({ title, accent, data }) {
   const isHigh = data.risk_level === "HIGH";
 
   return (
-    <div style={{
-      background: "#fff", border: "1.5px solid #e8e8e8", borderRadius: 16,
-      padding: 28, boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-    }}>
-      <div style={{
-        fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-        color: accent, marginBottom: 20, fontFamily: "'Outfit', sans-serif",
-      }}>{title}</div>
-
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
-        <span style={{ fontSize: 13, color: "#666", fontFamily: "'Outfit', sans-serif" }}>Metastasis Probability</span>
-        <span style={{ fontSize: 28, fontWeight: 700, color: "#1a1a1a", fontFamily: "'Source Serif 4', serif" }}>{pct}%</span>
+    <div
+      style={{
+        background: "#fff",
+        border: "1.5px solid #e8e8e8",
+        borderRadius: 16,
+        padding: 28,
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: accent,
+          marginBottom: 20,
+          fontFamily: "'Outfit', sans-serif",
+        }}
+      >
+        {title}
       </div>
 
-      <div style={{ height: 8, borderRadius: 4, background: "#f0f0f0", overflow: "hidden", marginBottom: 20 }}>
-        <div style={{
-          height: "100%", borderRadius: 4, width: `${pct}%`,
-          background: isHigh ? "linear-gradient(90deg, #e74c3c, #c0392b)" : "linear-gradient(90deg, #1a6b4f, #2ecc71)",
-          transition: "width 1s cubic-bezier(0.16, 1, 0.3, 1)",
-          animation: "barFill 1s cubic-bezier(0.16, 1, 0.3, 1)",
-        }} />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          marginBottom: 6,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 13,
+            color: "#666",
+            fontFamily: "'Outfit', sans-serif",
+          }}
+        >
+          Metastasis Probability
+        </span>
+        <span
+          style={{
+            fontSize: 28,
+            fontWeight: 700,
+            color: "#1a1a1a",
+            fontFamily: "'Source Serif 4', serif",
+          }}
+        >
+          {pct}%
+        </span>
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderTop: "1px solid #f0f0f0" }}>
-        <span style={{ fontSize: 13, color: "#666", fontFamily: "'Outfit', sans-serif" }}>No Metastasis</span>
-        <span style={{ fontSize: 15, fontWeight: 600, color: "#1a1a1a", fontFamily: "'Outfit', sans-serif" }}>{(data.no_metastasis * 100).toFixed(1)}%</span>
+      <div
+        style={{
+          height: 8,
+          borderRadius: 4,
+          background: "#f0f0f0",
+          overflow: "hidden",
+          marginBottom: 20,
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            borderRadius: 4,
+            width: `${pct}%`,
+            background: isHigh
+              ? "linear-gradient(90deg, #e74c3c, #c0392b)"
+              : "linear-gradient(90deg, #1a6b4f, #2ecc71)",
+            transition: "width 1s cubic-bezier(0.16, 1, 0.3, 1)",
+            animation: "barFill 1s cubic-bezier(0.16, 1, 0.3, 1)",
+          }}
+        />
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderTop: "1px solid #f0f0f0" }}>
-        <span style={{ fontSize: 13, color: "#666", fontFamily: "'Outfit', sans-serif" }}>Risk Level</span>
-        <span style={{
-          display: "inline-block", padding: "5px 14px", borderRadius: 6, fontSize: 12, fontWeight: 700,
-          fontFamily: "'Outfit', sans-serif", letterSpacing: "0.05em",
-          background: isHigh ? "#fdf0f0" : "#edf9f4",
-          color: isHigh ? "#c0392b" : "#1a6b4f",
-          border: `1px solid ${isHigh ? "#f5c6c6" : "#b8e6d0"}`,
-        }}>{data.risk_level}</span>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "12px 0",
+          borderTop: "1px solid #f0f0f0",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 13,
+            color: "#666",
+            fontFamily: "'Outfit', sans-serif",
+          }}
+        >
+          No Metastasis
+        </span>
+        <span
+          style={{
+            fontSize: 15,
+            fontWeight: 600,
+            color: "#1a1a1a",
+            fontFamily: "'Outfit', sans-serif",
+          }}
+        >
+          {(data.no_metastasis * 100).toFixed(1)}%
+        </span>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "12px 0",
+          borderTop: "1px solid #f0f0f0",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 13,
+            color: "#666",
+            fontFamily: "'Outfit', sans-serif",
+          }}
+        >
+          Risk Level
+        </span>
+        <span
+          style={{
+            display: "inline-block",
+            padding: "5px 14px",
+            borderRadius: 6,
+            fontSize: 12,
+            fontWeight: 700,
+            fontFamily: "'Outfit', sans-serif",
+            letterSpacing: "0.05em",
+            background: isHigh ? "#fdf0f0" : "#edf9f4",
+            color: isHigh ? "#c0392b" : "#1a6b4f",
+            border: `1px solid ${isHigh ? "#f5c6c6" : "#b8e6d0"}`,
+          }}
+        >
+          {data.risk_level}
+        </span>
       </div>
     </div>
   );
@@ -421,7 +611,10 @@ const App = () => {
   const [error, setError] = useState("");
   const resultsRef = useRef(null);
 
-  useEffect(() => { injectStyles(); fetchCancerTypes(); }, []);
+  useEffect(() => {
+    injectStyles();
+    fetchCancerTypes();
+  }, []);
 
   const fetchCancerTypes = async () => {
     try {
@@ -429,7 +622,9 @@ const App = () => {
       const data = await res.json();
       setCancerTypes(data.cancer_types || []);
     } catch {
-      setError("Failed to connect to prediction API. It may be starting up — try refreshing in 30 seconds.");
+      setError(
+        "Failed to connect to prediction API. It may be starting up — try refreshing in 30 seconds."
+      );
     }
   };
 
@@ -447,7 +642,10 @@ const App = () => {
 
     // Scroll to loading area
     setTimeout(() => {
-      resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      resultsRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     }, 100);
 
     try {
@@ -467,127 +665,254 @@ const App = () => {
   };
 
   const fields = CANCER_FIELDS[selectedCancer] || [];
-  const hasLogistic = prediction && prediction.predictions && prediction.predictions.logistic_regression;
+  const hasLogistic =
+    prediction &&
+    prediction.predictions &&
+    prediction.predictions.logistic_regression;
   const estTime = ESTIMATED_TIMES[selectedCancer] || 15;
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(180deg, #f7f9f8 0%, #eef2f0 100%)",
-      fontFamily: "'Outfit', sans-serif",
-      color: "#1a1a1a",
-    }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(180deg, #f7f9f8 0%, #eef2f0 100%)",
+        fontFamily: "'Outfit', sans-serif",
+        color: "#1a1a1a",
+      }}
+    >
       {/* Top accent bar */}
-      <div style={{ height: 4, background: "linear-gradient(90deg, #1a6b4f, #2ecc71, #1a6b4f)" }} />
+      <div
+        style={{
+          height: 4,
+          background: "linear-gradient(90deg, #1a6b4f, #2ecc71, #1a6b4f)",
+        }}
+      />
 
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "48px 24px 80px" }}>
-
+      <div
+        style={{ maxWidth: 860, margin: "0 auto", padding: "48px 24px 80px" }}
+      >
         {/* Header */}
         <header style={{ marginBottom: 40 }}>
-          <h1 style={{
-            fontSize: 38, fontWeight: 700, color: "#1a1a1a",
-            fontFamily: "'Source Serif 4', serif", lineHeight: 1.2,
-            letterSpacing: "-0.02em", marginBottom: 10,
-          }}>
-            Cancer Metastasis<br />Risk Prediction
+          <h1
+            style={{
+              fontSize: 38,
+              fontWeight: 700,
+              color: "#1a1a1a",
+              fontFamily: "'Source Serif 4', serif",
+              lineHeight: 1.2,
+              letterSpacing: "-0.02em",
+              marginBottom: 10,
+            }}
+          >
+            Cancer Metastasis
+            <br />
+            Risk Prediction
           </h1>
-          <p style={{ fontSize: 16, color: "#777", fontWeight: 400, lineHeight: 1.6 }}>
+          <p
+            style={{
+              fontSize: 16,
+              color: "#777",
+              fontWeight: 400,
+              lineHeight: 1.6,
+            }}
+          >
             Enter patient information below to estimate metastasis risk.
           </p>
         </header>
 
         {/* Error */}
         {error && (
-          <div style={{
-            background: "#fdf5f5", border: "1px solid #f0c4c4", borderRadius: 12,
-            padding: "14px 18px", marginBottom: 24, color: "#b33a3a", fontSize: 14,
-            display: "flex", alignItems: "center", gap: 10,
-          }}>
+          <div
+            style={{
+              background: "#fdf5f5",
+              border: "1px solid #f0c4c4",
+              borderRadius: 12,
+              padding: "14px 18px",
+              marginBottom: 24,
+              color: "#b33a3a",
+              fontSize: 14,
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
             <span>⚠</span> {error}
           </div>
         )}
 
         {/* ── Single Card: Cancer Type + Inputs + Button ── */}
-        <div style={{
-          background: "#fff", border: "1.5px solid #e8e8e8", borderRadius: 16,
-          padding: 32, marginBottom: 24, boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
-        }}>
+        <div
+          style={{
+            background: "#fff",
+            border: "1.5px solid #e8e8e8",
+            borderRadius: 16,
+            padding: 32,
+            marginBottom: 24,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
+          }}
+        >
           {/* Cancer Type */}
-          <div style={{
-            fontSize: 13, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
-            color: "#999", marginBottom: 18, display: "flex", alignItems: "center", gap: 8,
-          }}>
-            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#1a6b4f" }} />
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: "#999",
+              marginBottom: 18,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <span
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: "#1a6b4f",
+              }}
+            />
             Cancer Type
           </div>
-          <div style={{ position: "relative", marginBottom: selectedCancer ? 28 : 0 }}>
+          <div
+            style={{
+              position: "relative",
+              marginBottom: selectedCancer ? 28 : 0,
+            }}
+          >
             <select
               style={{
-                width: "100%", padding: "14px 16px", borderRadius: 10,
-                border: "1.5px solid #ddd", background: "#fff", color: "#1a1a1a",
-                fontSize: 15, fontFamily: "'Outfit', sans-serif", fontWeight: 500,
-                appearance: "none", cursor: "pointer", transition: "all 0.2s ease",
+                width: "100%",
+                padding: "14px 16px",
+                borderRadius: 10,
+                border: "1.5px solid #ddd",
+                background: "#fff",
+                color: "#1a1a1a",
+                fontSize: 15,
+                fontFamily: "'Outfit', sans-serif",
+                fontWeight: 500,
+                appearance: "none",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
               }}
               value={selectedCancer}
               onChange={(e) => handleCancerChange(e.target.value)}
             >
               <option value="">Choose a cancer type…</option>
               {cancerTypes.map((type) => (
-                <option key={type} value={type}>{CANCER_DISPLAY_NAMES[type] || type}</option>
+                <option key={type} value={type}>
+                  {CANCER_DISPLAY_NAMES[type] || type}
+                </option>
               ))}
             </select>
-            <span style={{
-              position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
-              pointerEvents: "none", color: "#999", fontSize: 11,
-            }}>▼</span>
+            <span
+              style={{
+                position: "absolute",
+                right: 14,
+                top: "50%",
+                transform: "translateY(-50%)",
+                pointerEvents: "none",
+                color: "#999",
+                fontSize: 11,
+              }}
+            >
+              ▼
+            </span>
           </div>
 
           {/* Patient Inputs */}
           {selectedCancer && fields.length > 0 && (
             <>
-              <div style={{
-                height: 1, background: "#f0f0f0", marginBottom: 24,
-              }} />
-              <div style={{
-                fontSize: 13, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
-                color: "#999", marginBottom: 18, display: "flex", alignItems: "center", gap: 8,
-              }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#d4a843" }} />
+              <div
+                style={{
+                  height: 1,
+                  background: "#f0f0f0",
+                  marginBottom: 24,
+                }}
+              />
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: "#999",
+                  marginBottom: 18,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <span
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: "50%",
+                    background: "#d4a843",
+                  }}
+                />
                 Patient Information
               </div>
 
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-                gap: 18,
-              }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                  gap: 18,
+                }}
+              >
                 {fields.map((f) => (
                   <FieldInput
                     key={f.key}
                     field={f}
                     value={formData[f.key]}
-                    onChange={(val) => setFormData((prev) => ({ ...prev, [f.key]: val }))}
+                    onChange={(val) =>
+                      setFormData((prev) => ({ ...prev, [f.key]: val }))
+                    }
                   />
                 ))}
               </div>
 
               <button
                 style={{
-                  width: "100%", padding: "15px 24px", borderRadius: 12, border: "none",
-                  cursor: loading ? "not-allowed" : "pointer", fontSize: 15, fontWeight: 600,
-                  fontFamily: "'Outfit', sans-serif", color: "#fff",
-                  background: loading ? "#a0c4b8" : "linear-gradient(135deg, #1a6b4f 0%, #238c65 100%)",
-                  boxShadow: loading ? "none" : "0 4px 16px rgba(26,107,79,0.15)",
-                  transition: "all 0.3s ease", marginTop: 24,
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                  width: "100%",
+                  padding: "15px 24px",
+                  borderRadius: 12,
+                  border: "none",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  fontSize: 15,
+                  fontWeight: 600,
+                  fontFamily: "'Outfit', sans-serif",
+                  color: "#fff",
+                  background: loading
+                    ? "#a0c4b8"
+                    : "linear-gradient(135deg, #1a6b4f 0%, #238c65 100%)",
+                  boxShadow: loading
+                    ? "none"
+                    : "0 4px 16px rgba(26,107,79,0.15)",
+                  transition: "all 0.3s ease",
+                  marginTop: 24,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
                 }}
                 disabled={loading}
                 onClick={handleSubmit}
               >
-                {loading && <div style={{
-                  width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)",
-                  borderTop: "2px solid #fff", borderRadius: "50%", animation: "spin 0.8s linear infinite",
-                }} />}
+                {loading && (
+                  <div
+                    style={{
+                      width: 16,
+                      height: 16,
+                      border: "2px solid rgba(255,255,255,0.3)",
+                      borderTop: "2px solid #fff",
+                      borderRadius: "50%",
+                      animation: "spin 0.8s linear infinite",
+                    }}
+                  />
+                )}
                 {loading ? "Running prediction…" : "Predict Metastasis Risk"}
               </button>
             </>
@@ -597,45 +922,87 @@ const App = () => {
         {/* ── Loading Timer ── */}
         <div ref={resultsRef}>
           {loading && (
-            <div style={{
-              background: "#fff", border: "1.5px solid #e8e8e8", borderRadius: 16,
-              marginBottom: 24, boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
-              animation: "fadeUp 0.4s ease",
-            }}>
+            <div
+              style={{
+                background: "#fff",
+                border: "1.5px solid #e8e8e8",
+                borderRadius: 16,
+                marginBottom: 24,
+                boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
+                animation: "fadeUp 0.4s ease",
+              }}
+            >
               <PredictionTimer estimatedSeconds={estTime} />
             </div>
           )}
 
           {/* ── Results ── */}
           {prediction && !loading && (
-            <div style={{
-              background: "#fff", border: "1.5px solid #e8e8e8", borderRadius: 16,
-              padding: 32, marginBottom: 24, boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
-              animation: "fadeUp 0.5s ease",
-            }}>
-              <div style={{
-                fontSize: 13, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
-                color: "#999", marginBottom: 18, display: "flex", alignItems: "center", gap: 8,
-              }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#1a6b4f" }} />
+            <div
+              style={{
+                background: "#fff",
+                border: "1.5px solid #e8e8e8",
+                borderRadius: 16,
+                padding: 32,
+                marginBottom: 24,
+                boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
+                animation: "fadeUp 0.5s ease",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: "#999",
+                  marginBottom: 18,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <span
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: "50%",
+                    background: "#1a6b4f",
+                  }}
+                />
                 Prediction Results
               </div>
 
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: hasLogistic ? "1fr 1fr" : "1fr",
-                gap: 20,
-              }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: hasLogistic ? "1fr 1fr" : "1fr",
+                  gap: 20,
+                }}
+              >
                 {hasLogistic && (
-                  <ResultCard title="Logistic Regression" accent="#2980b9" data={prediction.predictions.logistic_regression} />
+                  <ResultCard
+                    title="Logistic Regression"
+                    accent="#2980b9"
+                    data={prediction.predictions.logistic_regression}
+                  />
                 )}
-                <ResultCard title="Random Forest" accent="#1a6b4f" data={prediction.predictions.random_forest} />
+                <ResultCard
+                  title="Random Forest"
+                  accent="#1a6b4f"
+                  data={prediction.predictions.random_forest}
+                />
               </div>
 
-              <div style={{
-                textAlign: "center", fontSize: 12, color: "#bbb", marginTop: 16,
-                fontFamily: "'Outfit', sans-serif",
-              }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  fontSize: 12,
+                  color: "#bbb",
+                  marginTop: 16,
+                  fontFamily: "'Outfit', sans-serif",
+                }}
+              >
                 Prediction generated at {new Date().toLocaleString()}
               </div>
             </div>
@@ -643,13 +1010,20 @@ const App = () => {
         </div>
 
         {/* Disclaimer */}
-        <p style={{
-          textAlign: "center", fontSize: 12, color: "#aaa", marginTop: 40,
-          lineHeight: 1.7, padding: "0 40px", fontFamily: "'Outfit', sans-serif",
-        }}>
-          This tool is intended for research and educational purposes only.
-          It should not replace clinical judgment or be used as the sole basis for medical decisions.
-          Always consult with qualified healthcare professionals for patient care.
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: 12,
+            color: "#aaa",
+            marginTop: 40,
+            lineHeight: 1.7,
+            padding: "0 40px",
+            fontFamily: "'Outfit', sans-serif",
+          }}
+        >
+          This tool is intended for research and educational purposes only. It
+          should not replace clinical judgment or be used as the sole basis for
+          medical decisions.
         </p>
       </div>
     </div>
