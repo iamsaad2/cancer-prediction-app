@@ -25,25 +25,6 @@ const CANCER_DISPLAY_NAMES = {
   LSC: "Lung (Small Cell)",
 };
 
-// Estimated prediction times in seconds based on model sizes
-// Calibrated from: colon 308MB=21s, breast 122MB(rds)=9s, prostate 935MB=42s
-const ESTIMATED_TIMES = {
-  breast: 10,
-  prostate: 45,
-  colon: 21,
-  rectum: 8,
-  urine: 11,
-  esophagu: 6,
-  melanoma: 11,
-  liver: 7,
-  kidney: 13,
-  ovary: 6,
-  retroper: 4,
-  testis: 5,
-  LNSC: 24,
-  LSC: 7,
-};
-
 const FIELD_LABELS = {
   age: "Age",
   tnm_n: "Lymph Node Stage (N)",
@@ -68,19 +49,24 @@ const FIELD_LABELS = {
   ldh_status: "LDH Status",
 };
 
-// ── Correct input options from R code ────────────────────────────────────
-
+// Options match each model's actual training factor levels (see backend xlevels).
 const FIELD_OPTIONS = {
-  // Shared fields
-  tnm_n: ["N0", "N1", "N2", "N3"],
-  tnm_t: ["T0", "T1", "T2", "T3", "T4"],
+  // TNM N: most cancers have full N0-N3, a few subsets.
+  tnm_n: ["N0", "N1", "N2", "N3", "Other/Unknown"],
+  tnm_n_n01: ["N0", "N1", "Other/Unknown"],            // ovary, prostate, liver, retroper
+  tnm_n_n012: ["N0", "N1", "N2", "Other/Unknown"],     // rectum, colon
+
+  // TNM T: ovary has no T4.
+  tnm_t: ["T0", "T1", "T2", "T3", "T4", "Other/Unknown"],
+  tnm_t_no_t4: ["T0", "T1", "T2", "T3", "Other/Unknown"],
+
   sex: ["male", "female"],
 
   // Breast
-  er_status: ["No", "Yes"],
-  pr_status: ["No", "Yes"],
-  her2_status: ["No", "Yes"],
-  grade: ["Grade 1", "Grade 2", "Grade 3", "Grade 4"],
+  er_status: ["No", "Yes", "Other/Unknown"],
+  pr_status: ["No", "Yes", "Other/Unknown"],
+  her2_status: ["No", "Yes", "Other/Unknown"],
+  grade: ["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Other/Unknown"],
 
   // Prostate
   gleason: [
@@ -89,29 +75,56 @@ const FIELD_OPTIONS = {
     "Grade group 3",
     "Grade group 4",
     "Grade group 5",
+    "Other/Unknown",
   ],
 
   // Rectum
-  cea_status: ["Negative/normal; within normal limits", "Positive/elevated"],
+  cea_status: [
+    "Negative/normal; within normal limits",
+    "Positive/elevated",
+    "Other/Unknown",
+  ],
 
   // Liver
-  afp_status_liver: ["Negative/normal", "Positive/elevated"],
-  fibrosis_score: ["Fibrosis score 0-4", "Fibrosis score 5-6"],
+  afp_status_liver: ["Negative/normal", "Positive/elevated", "Other/Unknown"],
+  fibrosis_score: ["Fibrosis score 0-4", "Fibrosis score 5-6", "Other/Unknown"],
 
-  // Kidney
-  surgical_factors: ["Yes", "No"],
-  fuhrman_grade: ["1", "2", "3", "4"],
+  // Kidney — model only knows "Yes" / "Other/Unknown" for sarcomatoid features.
+  surgical_factors: ["Yes", "Other/Unknown"],
+  fuhrman_grade: ["1", "2", "3", "4", "Other/Unknown"],
 
   // Ovary
-  ca125_status: ["Negative/normal; within normal limits", "Positive/elevated"],
+  ca125_status: [
+    "Negative/normal; within normal limits",
+    "Positive/elevated",
+    "Other/Unknown",
+  ],
 
   // Retroperitoneal
-  surgical_grade: ["1", "2", "3"],
+  surgical_grade: ["1", "2", "3", "Other/Unknown"],
 
-  // Testis
-  afp_status_testis: ["Within normal limits", "Elevated"],
-  hcg_status: ["Within normal limits", "Elevated"],
-  ldh_status: ["Within normal limits", "Elevated"],
+  // Testis — model expects clinically meaningful ranges, not binary.
+  afp_status_testis: [
+    "Within normal limits",
+    "Above normal; < 1,000 ng/ml",
+    "1,000 -10,000 ng/ml",
+    ">10,000 ng/ml",
+    "Other/Unknown",
+  ],
+  hcg_status: [
+    "Within normal limits",
+    "Above normal; < 5,000 mIU/ml",
+    "5,000 -50,000 mIU/ml",
+    ">50,000 mIU/ml",
+    "Other/Unknown",
+  ],
+  ldh_status: [
+    "Within normal limits",
+    "< 1.5 x upper normal limit (N)",
+    "1.5 - 10 x N",
+    "> 10 x N",
+    "Other/Unknown",
+  ],
 };
 
 // Which cancer types need which fields, with correct option keys
@@ -127,7 +140,7 @@ const CANCER_FIELDS = {
   ],
   prostate: [
     { key: "age", type: "number", min: 0, max: 120, step: 1 },
-    { key: "tnm_n", type: "select", options: "tnm_n" },
+    { key: "tnm_n", type: "select", options: "tnm_n_n01" },
     { key: "tnm_t", type: "select", options: "tnm_t" },
     { key: "psa", type: "number", min: 0, step: 0.1 },
     { key: "core_ratio", type: "number", min: 0, max: 1, step: 0.01 },
@@ -136,14 +149,14 @@ const CANCER_FIELDS = {
   colon: [
     { key: "age", type: "number", min: 0, max: 120, step: 1 },
     { key: "sex", type: "select", options: "sex" },
-    { key: "tnm_n", type: "select", options: "tnm_n" },
+    { key: "tnm_n", type: "select", options: "tnm_n_n012" },
     { key: "tnm_t", type: "select", options: "tnm_t" },
     { key: "cea", type: "number", min: 0, step: 0.1 },
   ],
   rectum: [
     { key: "age", type: "number", min: 0, max: 120, step: 1 },
     { key: "sex", type: "select", options: "sex" },
-    { key: "tnm_n", type: "select", options: "tnm_n" },
+    { key: "tnm_n", type: "select", options: "tnm_n_n012" },
     { key: "tnm_t", type: "select", options: "tnm_t" },
     { key: "cea_status", type: "select", options: "cea_status" },
   ],
@@ -168,7 +181,7 @@ const CANCER_FIELDS = {
   liver: [
     { key: "age", type: "number", min: 0, max: 120, step: 1 },
     { key: "sex", type: "select", options: "sex" },
-    { key: "tnm_n", type: "select", options: "tnm_n" },
+    { key: "tnm_n", type: "select", options: "tnm_n_n01" },
     { key: "tnm_t", type: "select", options: "tnm_t" },
     { key: "afp_status", type: "select", options: "afp_status_liver" },
     { key: "fibrosis_score", type: "select", options: "fibrosis_score" },
@@ -183,14 +196,14 @@ const CANCER_FIELDS = {
   ],
   ovary: [
     { key: "age", type: "number", min: 0, max: 120, step: 1 },
-    { key: "tnm_n", type: "select", options: "tnm_n" },
-    { key: "tnm_t", type: "select", options: "tnm_t" },
+    { key: "tnm_n", type: "select", options: "tnm_n_n01" },
+    { key: "tnm_t", type: "select", options: "tnm_t_no_t4" },
     { key: "ca125_status", type: "select", options: "ca125_status" },
   ],
   retroper: [
     { key: "age", type: "number", min: 0, max: 120, step: 1 },
     { key: "sex", type: "select", options: "sex" },
-    { key: "tnm_n", type: "select", options: "tnm_n" },
+    { key: "tnm_n", type: "select", options: "tnm_n_n01" },
     { key: "tnm_t", type: "select", options: "tnm_t" },
     { key: "surgical_grade", type: "select", options: "surgical_grade" },
   ],
@@ -252,31 +265,9 @@ const injectStyles = () => {
   document.head.appendChild(style);
 };
 
-// ── Timer Loader Component ───────────────────────────────────────────────
+// ── Loading Indicator ────────────────────────────────────────────────────
 
-function PredictionTimer({ estimatedSeconds }) {
-  const [elapsed, setElapsed] = useState(0);
-  const intervalRef = useRef(null);
-
-  useEffect(() => {
-    setElapsed(0);
-    intervalRef.current = setInterval(() => {
-      setElapsed((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(intervalRef.current);
-  }, [estimatedSeconds]);
-
-  const progress = Math.min(elapsed / estimatedSeconds, 0.95);
-  const radius = 40;
-  const circumference = 2 * Math.PI * radius;
-  const dashOffset = circumference * (1 - progress);
-
-  const formatTime = (s) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return m > 0 ? `${m}:${sec.toString().padStart(2, "0")}` : `${sec}s`;
-  };
-
+function PredictionLoading() {
   return (
     <div
       style={{
@@ -284,75 +275,29 @@ function PredictionTimer({ estimatedSeconds }) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "40px 20px",
-        gap: 20,
+        padding: "32px 20px",
+        gap: 14,
       }}
     >
-      <div style={{ position: "relative", width: 96, height: 96 }}>
-        <svg
-          width="96"
-          height="96"
-          viewBox="0 0 96 96"
-          style={{ transform: "rotate(-90deg)" }}
-        >
-          <circle
-            cx="48"
-            cy="48"
-            r={radius}
-            fill="none"
-            stroke="#e8efe8"
-            strokeWidth="6"
-          />
-          <circle
-            cx="48"
-            cy="48"
-            r={radius}
-            fill="none"
-            stroke="#1a6b4f"
-            strokeWidth="6"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={dashOffset}
-            style={{ transition: "stroke-dashoffset 1s linear" }}
-          />
-        </svg>
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 20,
-            fontWeight: 700,
-            color: "#1a6b4f",
-            fontFamily: "'Outfit', sans-serif",
-          }}
-        >
-          {formatTime(elapsed)}
-        </div>
-      </div>
-      <div style={{ textAlign: "center" }}>
-        <div
-          style={{
-            fontSize: 14,
-            fontWeight: 600,
-            color: "#1a1a1a",
-            fontFamily: "'Outfit', sans-serif",
-            marginBottom: 4,
-          }}
-        >
-          Running prediction model
-        </div>
-        <div
-          style={{
-            fontSize: 12,
-            color: "#888",
-            fontFamily: "'Outfit', sans-serif",
-          }}
-        >
-          Estimated time: ~{estimatedSeconds}s
-        </div>
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          border: "3px solid #e8efe8",
+          borderTop: "3px solid #1a6b4f",
+          borderRadius: "50%",
+          animation: "spin 0.8s linear infinite",
+        }}
+      />
+      <div
+        style={{
+          fontSize: 14,
+          fontWeight: 600,
+          color: "#1a1a1a",
+          fontFamily: "'Outfit', sans-serif",
+        }}
+      >
+        Computing prediction…
       </div>
     </div>
   );
@@ -665,11 +610,6 @@ const App = () => {
   };
 
   const fields = CANCER_FIELDS[selectedCancer] || [];
-  const hasLogistic =
-    prediction &&
-    prediction.predictions &&
-    prediction.predictions.logistic_regression;
-  const estTime = ESTIMATED_TIMES[selectedCancer] || 15;
 
   return (
     <div
@@ -932,7 +872,7 @@ const App = () => {
                 animation: "fadeUp 0.4s ease",
               }}
             >
-              <PredictionTimer estimatedSeconds={estTime} />
+              <PredictionLoading />
             </div>
           )}
 
@@ -973,26 +913,11 @@ const App = () => {
                 Prediction Results
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: hasLogistic ? "1fr 1fr" : "1fr",
-                  gap: 20,
-                }}
-              >
-                {hasLogistic && (
-                  <ResultCard
-                    title="Logistic Regression"
-                    accent="#2980b9"
-                    data={prediction.predictions.logistic_regression}
-                  />
-                )}
-                <ResultCard
-                  title="Random Forest"
-                  accent="#1a6b4f"
-                  data={prediction.predictions.random_forest}
-                />
-              </div>
+              <ResultCard
+                title="Random Forest"
+                accent="#1a6b4f"
+                data={prediction.predictions.random_forest}
+              />
 
               <div
                 style={{
