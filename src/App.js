@@ -47,12 +47,11 @@ const FIELD_LABELS = {
   surgical_grade: "Surgical Grade",
   hcg_status: "HCG Status",
   ldh_status: "LDH Status",
-  // Aim 2 — known metastasis status (used as features when predicting other sites)
-  mets_bone: "Bone Metastasis (known)",
-  mets_brain: "Brain Metastasis (known)",
-  mets_liver: "Liver Metastasis (known)",
-  mets_lung: "Lung Metastasis (known)",
-  mets_other: "Other Metastasis (known)",
+  mets_bone: "Bone Metastasis",
+  mets_brain: "Brain Metastasis",
+  mets_liver: "Liver Metastasis",
+  mets_lung: "Lung Metastasis",
+  mets_other: "Other Metastasis",
 };
 
 const SITE_LABELS = {
@@ -686,6 +685,64 @@ function SiteResultsGrid({ predictions }) {
   );
 }
 
+// ── Footer with simplifications / assumptions ───────────────────────────
+
+function AssumptionsFooter() {
+  const item = {
+    fontSize: 12,
+    color: "#666",
+    lineHeight: 1.5,
+    fontFamily: "'Outfit', sans-serif",
+    marginBottom: 4,
+  };
+  return (
+    <footer
+      style={{
+        marginTop: 32,
+        padding: 18,
+        borderTop: "1px solid #e5e9e7",
+        fontFamily: "'Outfit', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: "#999",
+          marginBottom: 10,
+        }}
+      >
+        Modeling Assumptions
+      </div>
+      <ul style={{ paddingLeft: 18, margin: 0 }}>
+        <li style={item}>
+          <b>Overall Risk (Aim 1)</b>: uses exact age (0-99). HIGH risk if predicted probability &gt; 50%.
+        </li>
+        <li style={item}>
+          <b>Site-Specific (Aim 2)</b>: age is bucketed to 10-year groups (midpoints 5, 15, … 95).
+          Predicts metastasis to bone, brain, liver, lung only.
+        </li>
+        <li style={item}>
+          <b>Numeric inputs</b> are mapped to the nearest clinical bucket — PSA: 2/7/15/35/75/150,
+          core ratio: 0.1/0.3/0.5/0.7/0.9, CEA: 1/3.75/7.5/15/35/100.
+        </li>
+        <li style={item}>
+          <b>Known metastasis fields</b> (bone/brain/liver/lung/other) accept only Yes or No.
+        </li>
+        <li style={item}>
+          <b>Categorical options</b> match each model's training data. Some models accept "Other/Unknown"
+          for missing values, and some cancers were only trained on a subset of TNM stages.
+        </li>
+        <li style={item}>
+          This tool is for research/educational use and is not a substitute for clinical judgment.
+        </li>
+      </ul>
+    </footer>
+  );
+}
+
 // ── Main App ─────────────────────────────────────────────────────────────
 
 const App = () => {
@@ -785,31 +842,29 @@ const App = () => {
       />
 
       <div
-        style={{ maxWidth: 860, margin: "0 auto", padding: "48px 24px 80px" }}
+        style={{ maxWidth: 1180, margin: "0 auto", padding: "24px 24px 32px" }}
       >
         {/* Header */}
-        <header style={{ marginBottom: 40 }}>
+        <header style={{ marginBottom: 16 }}>
           <h1
             style={{
-              fontSize: 38,
+              fontSize: 26,
               fontWeight: 700,
               color: "#1a1a1a",
               fontFamily: "'Source Serif 4', serif",
               lineHeight: 1.2,
               letterSpacing: "-0.02em",
-              marginBottom: 10,
+              marginBottom: 4,
             }}
           >
-            Cancer Metastasis
-            <br />
-            Risk Prediction
+            Cancer Metastasis Risk Prediction
           </h1>
           <p
             style={{
-              fontSize: 16,
+              fontSize: 13,
               color: "#777",
               fontWeight: 400,
-              lineHeight: 1.6,
+              lineHeight: 1.5,
             }}
           >
             {mode === "aim1"
@@ -823,10 +878,10 @@ const App = () => {
           style={{
             display: "flex",
             gap: 4,
-            padding: 4,
+            padding: 3,
             background: "#eef2f0",
-            borderRadius: 12,
-            marginBottom: 24,
+            borderRadius: 10,
+            marginBottom: 16,
             width: "fit-content",
           }}
         >
@@ -877,14 +932,25 @@ const App = () => {
           </div>
         )}
 
-        {/* ── Single Card: Cancer Type + Inputs + Button ── */}
+        {/* Two-column on wide screens; auto-stacks on mobile via auto-fit */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              loading || prediction
+                ? "repeat(auto-fit, minmax(340px, 1fr))"
+                : "1fr",
+            gap: 18,
+            alignItems: "start",
+          }}
+        >
+        {/* ── Form Card: Cancer Type + Inputs + Button ── */}
         <div
           style={{
             background: "#fff",
             border: "1.5px solid #e8e8e8",
-            borderRadius: 16,
-            padding: 32,
-            marginBottom: 24,
+            borderRadius: 14,
+            padding: 20,
             boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
           }}
         >
@@ -995,8 +1061,8 @@ const App = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-                  gap: 18,
+                  gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+                  gap: 12,
                 }}
               >
                 {fields.map((f) => (
@@ -1014,11 +1080,11 @@ const App = () => {
               <button
                 style={{
                   width: "100%",
-                  padding: "15px 24px",
-                  borderRadius: 12,
+                  padding: "12px 20px",
+                  borderRadius: 10,
                   border: "none",
                   cursor: loading ? "not-allowed" : "pointer",
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: 600,
                   fontFamily: "'Outfit', sans-serif",
                   color: "#fff",
@@ -1029,7 +1095,7 @@ const App = () => {
                     ? "none"
                     : "0 4px 16px rgba(26,107,79,0.15)",
                   transition: "all 0.3s ease",
-                  marginTop: 24,
+                  marginTop: 16,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1083,21 +1149,20 @@ const App = () => {
               style={{
                 background: "#fff",
                 border: "1.5px solid #e8e8e8",
-                borderRadius: 16,
-                padding: 32,
-                marginBottom: 24,
+                borderRadius: 14,
+                padding: 20,
                 boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
                 animation: "fadeUp 0.5s ease",
               }}
             >
               <div
                 style={{
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: 700,
                   letterSpacing: "0.06em",
                   textTransform: "uppercase",
                   color: "#999",
-                  marginBottom: 18,
+                  marginBottom: 14,
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
@@ -1105,8 +1170,8 @@ const App = () => {
               >
                 <span
                   style={{
-                    width: 7,
-                    height: 7,
+                    width: 6,
+                    height: 6,
                     borderRadius: "50%",
                     background: "#1a6b4f",
                   }}
@@ -1123,38 +1188,14 @@ const App = () => {
               ) : (
                 <SiteResultsGrid predictions={prediction.predictions} />
               )}
-
-              <div
-                style={{
-                  textAlign: "center",
-                  fontSize: 12,
-                  color: "#bbb",
-                  marginTop: 16,
-                  fontFamily: "'Outfit', sans-serif",
-                }}
-              >
-                Prediction generated at {new Date().toLocaleString()}
-              </div>
             </div>
           )}
         </div>
+        {/* end results column */}
+        </div>
+        {/* end two-column grid */}
 
-        {/* Disclaimer */}
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: 12,
-            color: "#aaa",
-            marginTop: 40,
-            lineHeight: 1.7,
-            padding: "0 40px",
-            fontFamily: "'Outfit', sans-serif",
-          }}
-        >
-          This tool is intended for research and educational purposes only. It
-          should not replace clinical judgment or be used as the sole basis for
-          medical decisions.
-        </p>
+        <AssumptionsFooter />
       </div>
     </div>
   );
