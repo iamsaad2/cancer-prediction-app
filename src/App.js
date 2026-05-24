@@ -47,6 +47,19 @@ const FIELD_LABELS = {
   surgical_grade: "Surgical Grade",
   hcg_status: "HCG Status",
   ldh_status: "LDH Status",
+  // Aim 2 — known metastasis status (used as features when predicting other sites)
+  mets_bone: "Bone Metastasis (known)",
+  mets_brain: "Brain Metastasis (known)",
+  mets_liver: "Liver Metastasis (known)",
+  mets_lung: "Lung Metastasis (known)",
+  mets_other: "Other Metastasis (known)",
+};
+
+const SITE_LABELS = {
+  bone:  "Bone",
+  brain: "Brain",
+  liver: "Liver",
+  lung:  "Lung",
 };
 
 // Options match each model's actual training factor levels (see backend xlevels).
@@ -125,7 +138,19 @@ const FIELD_OPTIONS = {
     "> 10 x N",
     "Other/Unknown",
   ],
+
+  // Aim 2 mets fields — backend only accepts Yes/No
+  mets_yn: ["No", "Yes"],
 };
+
+// Aim 2 — applied on top of CANCER_FIELDS for each cancer. Backend requires all 5.
+const METS_FIELDS = [
+  { key: "mets_bone",  type: "select", options: "mets_yn" },
+  { key: "mets_brain", type: "select", options: "mets_yn" },
+  { key: "mets_liver", type: "select", options: "mets_yn" },
+  { key: "mets_lung",  type: "select", options: "mets_yn" },
+  { key: "mets_other", type: "select", options: "mets_yn" },
+];
 
 // Which cancer types need which fields, with correct option keys
 const CANCER_FIELDS = {
@@ -545,6 +570,122 @@ function ResultCard({ title, accent, data }) {
   );
 }
 
+// ── Aim 2 Site Results Grid ──────────────────────────────────────────────
+
+function SiteResultsGrid({ predictions }) {
+  const sites = ["bone", "brain", "liver", "lung"];
+  const sorted = [...sites].sort(
+    (a, b) => predictions[b].p_mets - predictions[a].p_mets
+  );
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+        gap: 16,
+      }}
+    >
+      {sorted.map((site) => {
+        const data = predictions[site];
+        const pct = (data.p_mets * 100).toFixed(1);
+        const isHigh = data.risk_level === "HIGH";
+        return (
+          <div
+            key={site}
+            style={{
+              background: "#fff",
+              border: "1.5px solid #e8e8e8",
+              borderRadius: 12,
+              padding: 20,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: isHigh ? "#c0392b" : "#1a6b4f",
+                marginBottom: 14,
+                fontFamily: "'Outfit', sans-serif",
+              }}
+            >
+              {SITE_LABELS[site]}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                marginBottom: 6,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 12,
+                  color: "#666",
+                  fontFamily: "'Outfit', sans-serif",
+                }}
+              >
+                Probability
+              </span>
+              <span
+                style={{
+                  fontSize: 24,
+                  fontWeight: 700,
+                  color: "#1a1a1a",
+                  fontFamily: "'Source Serif 4', serif",
+                }}
+              >
+                {pct}%
+              </span>
+            </div>
+            <div
+              style={{
+                height: 6,
+                borderRadius: 3,
+                background: "#f0f0f0",
+                overflow: "hidden",
+                marginBottom: 12,
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  borderRadius: 3,
+                  width: `${pct}%`,
+                  background: isHigh
+                    ? "linear-gradient(90deg, #e74c3c, #c0392b)"
+                    : "linear-gradient(90deg, #1a6b4f, #2ecc71)",
+                  transition: "width 1s cubic-bezier(0.16, 1, 0.3, 1)",
+                  animation: "barFill 1s cubic-bezier(0.16, 1, 0.3, 1)",
+                }}
+              />
+            </div>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "3px 10px",
+                borderRadius: 5,
+                fontSize: 10,
+                fontWeight: 700,
+                fontFamily: "'Outfit', sans-serif",
+                letterSpacing: "0.05em",
+                background: isHigh ? "#fdf0f0" : "#edf9f4",
+                color: isHigh ? "#c0392b" : "#1a6b4f",
+                border: `1px solid ${isHigh ? "#f5c6c6" : "#b8e6d0"}`,
+              }}
+            >
+              {data.risk_level}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Main App ─────────────────────────────────────────────────────────────
 
 const App = () => {
@@ -554,6 +695,7 @@ const App = () => {
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mode, setMode] = useState("aim1"); // "aim1" = overall risk, "aim2" = site-specific
   const resultsRef = useRef(null);
 
   useEffect(() => {
@@ -580,6 +722,13 @@ const App = () => {
     setError("");
   };
 
+  const handleModeChange = (val) => {
+    setMode(val);
+    setFormData({});
+    setPrediction(null);
+    setError("");
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
@@ -593,8 +742,12 @@ const App = () => {
       });
     }, 100);
 
+    const endpoint =
+      mode === "aim2"
+        ? `${API_BASE}/predict-sites/${selectedCancer}`
+        : `${API_BASE}/predict/${selectedCancer}`;
     try {
-      const res = await fetch(`${API_BASE}/predict/${selectedCancer}`, {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -609,7 +762,10 @@ const App = () => {
     }
   };
 
-  const fields = CANCER_FIELDS[selectedCancer] || [];
+  const fields = [
+    ...(CANCER_FIELDS[selectedCancer] || []),
+    ...(mode === "aim2" ? METS_FIELDS : []),
+  ];
 
   return (
     <div
@@ -656,9 +812,50 @@ const App = () => {
               lineHeight: 1.6,
             }}
           >
-            Enter patient information below to estimate metastasis risk.
+            {mode === "aim1"
+              ? "Estimate the patient's overall risk of metastasis."
+              : "Given known metastasis status, estimate risk for each specific site."}
           </p>
         </header>
+
+        {/* Mode tabs */}
+        <div
+          style={{
+            display: "flex",
+            gap: 4,
+            padding: 4,
+            background: "#eef2f0",
+            borderRadius: 12,
+            marginBottom: 24,
+            width: "fit-content",
+          }}
+        >
+          {[
+            { id: "aim1", label: "Overall Risk" },
+            { id: "aim2", label: "Site-Specific" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleModeChange(tab.id)}
+              style={{
+                padding: "8px 18px",
+                borderRadius: 8,
+                border: "none",
+                cursor: "pointer",
+                fontSize: 14,
+                fontWeight: 600,
+                fontFamily: "'Outfit', sans-serif",
+                background: mode === tab.id ? "#fff" : "transparent",
+                color: mode === tab.id ? "#1a6b4f" : "#666",
+                boxShadow:
+                  mode === tab.id ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
         {/* Error */}
         {error && (
@@ -853,7 +1050,11 @@ const App = () => {
                     }}
                   />
                 )}
-                {loading ? "Running prediction…" : "Predict Metastasis Risk"}
+                {loading
+                  ? "Running prediction…"
+                  : mode === "aim2"
+                  ? "Predict Site Risks"
+                  : "Predict Metastasis Risk"}
               </button>
             </>
           )}
@@ -913,11 +1114,15 @@ const App = () => {
                 Prediction Results
               </div>
 
-              <ResultCard
-                title="Random Forest"
-                accent="#1a6b4f"
-                data={prediction.predictions.random_forest}
-              />
+              {prediction.predictions.random_forest ? (
+                <ResultCard
+                  title="Random Forest"
+                  accent="#1a6b4f"
+                  data={prediction.predictions.random_forest}
+                />
+              ) : (
+                <SiteResultsGrid predictions={prediction.predictions} />
+              )}
 
               <div
                 style={{
