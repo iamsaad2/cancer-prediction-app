@@ -375,7 +375,7 @@ function FieldInput({ field, fieldDef, value, onChange }) {
             onChange={(e) => onChange(e.target.value)}
             required
           >
-            <option value="">Select {label}</option>
+            <option value="">Select…</option>
             {options.map((opt) => (
               <option key={opt} value={opt}>
                 {opt}
@@ -689,54 +689,44 @@ function SiteResultsGrid({ predictions }) {
 
 function AssumptionsFooter() {
   const item = {
-    fontSize: 12,
-    color: "#666",
+    fontSize: 11,
+    color: "#999",
     lineHeight: 1.5,
     fontFamily: "'Outfit', sans-serif",
-    marginBottom: 4,
+    marginBottom: 2,
   };
   return (
     <footer
       style={{
-        marginTop: 32,
-        padding: 18,
-        borderTop: "1px solid #e5e9e7",
+        marginTop: 24,
+        paddingTop: 12,
+        borderTop: "1px solid #eef1ef",
         fontFamily: "'Outfit', sans-serif",
+        opacity: 0.85,
       }}
     >
       <div
         style={{
-          fontSize: 11,
-          fontWeight: 700,
+          fontSize: 10,
+          fontWeight: 600,
           letterSpacing: "0.08em",
           textTransform: "uppercase",
-          color: "#999",
-          marginBottom: 10,
+          color: "#b3b3b3",
+          marginBottom: 6,
         }}
       >
-        Modeling Assumptions
+        Assumptions
       </div>
-      <ul style={{ paddingLeft: 18, margin: 0 }}>
+      <ul style={{ paddingLeft: 16, margin: 0 }}>
         <li style={item}>
-          <b>Overall Risk (Aim 1)</b>: uses exact age (0-99). HIGH risk if predicted probability &gt; 50%.
+          Overall Risk uses exact age (0-99); HIGH if probability &gt; 50%.
         </li>
         <li style={item}>
-          <b>Site-Specific (Aim 2)</b>: age is bucketed to 10-year groups (midpoints 5, 15, … 95).
-          Predicts metastasis to bone, brain, liver, lung only.
+          Site-Specific buckets age to 10-year groups (midpoints 5, 15, … 95) and predicts bone, brain, liver, lung.
         </li>
         <li style={item}>
-          <b>Numeric inputs</b> are mapped to the nearest clinical bucket — PSA: 2/7/15/35/75/150,
+          Numeric inputs are mapped to the nearest clinical bucket — PSA: 2/7/15/35/75/150,
           core ratio: 0.1/0.3/0.5/0.7/0.9, CEA: 1/3.75/7.5/15/35/100.
-        </li>
-        <li style={item}>
-          <b>Known metastasis fields</b> (bone/brain/liver/lung/other) accept only Yes or No.
-        </li>
-        <li style={item}>
-          <b>Categorical options</b> match each model's training data. Some models accept "Other/Unknown"
-          for missing values, and some cancers were only trained on a subset of TNM stages.
-        </li>
-        <li style={item}>
-          This tool is for research/educational use and is not a substitute for clinical judgment.
         </li>
       </ul>
     </footer>
