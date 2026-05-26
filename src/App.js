@@ -698,7 +698,7 @@ function AssumptionsFooter() {
   return (
     <footer
       style={{
-        marginTop: 24,
+        marginTop: "auto",
         paddingTop: 12,
         borderTop: "1px solid #eef1ef",
         fontFamily: "'Outfit', sans-serif",
@@ -718,11 +718,9 @@ function AssumptionsFooter() {
         Assumptions
       </div>
       <ul style={{ paddingLeft: 16, margin: 0 }}>
+        <li style={item}>Overall Risk uses exact age (0-99).</li>
         <li style={item}>
-          Overall Risk uses exact age (0-99); HIGH if probability &gt; 50%.
-        </li>
-        <li style={item}>
-          Site-Specific buckets age to 10-year groups (midpoints 5, 15, … 95) and predicts bone, brain, liver, lung.
+          Site-Specific buckets age to 10-year groups (midpoints 5, 15, … 95).
         </li>
         <li style={item}>
           Numeric inputs are mapped to the nearest clinical bucket — PSA: 2/7/15/35/75/150,
@@ -821,6 +819,8 @@ const App = () => {
         background: "linear-gradient(180deg, #f7f9f8 0%, #eef2f0 100%)",
         fontFamily: "'Outfit', sans-serif",
         color: "#1a1a1a",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {/* Top accent bar */}
@@ -832,7 +832,15 @@ const App = () => {
       />
 
       <div
-        style={{ maxWidth: 1180, margin: "0 auto", padding: "24px 24px 32px" }}
+        style={{
+          maxWidth: 1180,
+          width: "100%",
+          margin: "0 auto",
+          padding: "24px 24px 32px",
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
         {/* Header */}
         <header style={{ marginBottom: 16 }}>
