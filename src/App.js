@@ -571,11 +571,16 @@ function ResultCard({ title, accent, data }) {
 
 // ── Aim 2 Site Results Grid ──────────────────────────────────────────────
 
-function SiteResultsGrid({ predictions }) {
+function SiteResultsGrid({ predictions, patientData }) {
   const sites = ["bone", "brain", "liver", "lung"];
-  const sorted = [...sites].sort(
-    (a, b) => predictions[b].p_mets - predictions[a].p_mets
-  );
+  const isConfirmed = (s) => patientData && patientData[`mets_${s}`] === "Yes";
+  // Confirmed first, then predicted sites sorted by descending probability.
+  const sorted = [...sites].sort((a, b) => {
+    const ca = isConfirmed(a) ? 1 : 0;
+    const cb = isConfirmed(b) ? 1 : 0;
+    if (ca !== cb) return cb - ca;
+    return predictions[b].p_mets - predictions[a].p_mets;
+  });
   return (
     <div
       style={{
@@ -585,15 +590,17 @@ function SiteResultsGrid({ predictions }) {
       }}
     >
       {sorted.map((site) => {
+        const confirmed = isConfirmed(site);
         const data = predictions[site];
         const pct = (data.p_mets * 100).toFixed(1);
         const isHigh = data.risk_level === "HIGH";
+        const accent = confirmed ? "#2980b9" : isHigh ? "#c0392b" : "#1a6b4f";
         return (
           <div
             key={site}
             style={{
-              background: "#fff",
-              border: "1.5px solid #e8e8e8",
+              background: confirmed ? "#f3f8fc" : "#fff",
+              border: `1.5px solid ${confirmed ? "#cfe2f2" : "#e8e8e8"}`,
               borderRadius: 12,
               padding: 20,
               boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
@@ -605,79 +612,149 @@ function SiteResultsGrid({ predictions }) {
                 fontWeight: 700,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: isHigh ? "#c0392b" : "#1a6b4f",
+                color: accent,
                 marginBottom: 14,
                 fontFamily: "'Outfit', sans-serif",
               }}
             >
               {SITE_LABELS[site]}
             </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "baseline",
-                marginBottom: 6,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 12,
-                  color: "#666",
-                  fontFamily: "'Outfit', sans-serif",
-                }}
-              >
-                Probability
-              </span>
-              <span
-                style={{
-                  fontSize: 24,
-                  fontWeight: 700,
-                  color: "#1a1a1a",
-                  fontFamily: "'Source Serif 4', serif",
-                }}
-              >
-                {pct}%
-              </span>
-            </div>
-            <div
-              style={{
-                height: 6,
-                borderRadius: 3,
-                background: "#f0f0f0",
-                overflow: "hidden",
-                marginBottom: 12,
-              }}
-            >
-              <div
-                style={{
-                  height: "100%",
-                  borderRadius: 3,
-                  width: `${pct}%`,
-                  background: isHigh
-                    ? "linear-gradient(90deg, #e74c3c, #c0392b)"
-                    : "linear-gradient(90deg, #1a6b4f, #2ecc71)",
-                  transition: "width 1s cubic-bezier(0.16, 1, 0.3, 1)",
-                  animation: "barFill 1s cubic-bezier(0.16, 1, 0.3, 1)",
-                }}
-              />
-            </div>
-            <span
-              style={{
-                display: "inline-block",
-                padding: "3px 10px",
-                borderRadius: 5,
-                fontSize: 10,
-                fontWeight: 700,
-                fontFamily: "'Outfit', sans-serif",
-                letterSpacing: "0.05em",
-                background: isHigh ? "#fdf0f0" : "#edf9f4",
-                color: isHigh ? "#c0392b" : "#1a6b4f",
-                border: `1px solid ${isHigh ? "#f5c6c6" : "#b8e6d0"}`,
-              }}
-            >
-              {data.risk_level}
-            </span>
+
+            {confirmed ? (
+              <>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    marginBottom: 10,
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      background: "#2980b9",
+                      color: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 16,
+                      fontWeight: 700,
+                    }}
+                  >
+                    ✓
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 700,
+                      color: "#1a1a1a",
+                      fontFamily: "'Source Serif 4', serif",
+                    }}
+                  >
+                    Confirmed
+                  </span>
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#666",
+                    fontFamily: "'Outfit', sans-serif",
+                    lineHeight: 1.4,
+                    marginBottom: 12,
+                  }}
+                >
+                  Marked as known on input — no prediction needed.
+                </div>
+                <span
+                  style={{
+                    display: "inline-block",
+                    padding: "3px 10px",
+                    borderRadius: 5,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    fontFamily: "'Outfit', sans-serif",
+                    letterSpacing: "0.05em",
+                    background: "#eaf3fa",
+                    color: "#2980b9",
+                    border: "1px solid #cfe2f2",
+                  }}
+                >
+                  KNOWN
+                </span>
+              </>
+            ) : (
+              <>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                    marginBottom: 6,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: "#666",
+                      fontFamily: "'Outfit', sans-serif",
+                    }}
+                  >
+                    Probability
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 24,
+                      fontWeight: 700,
+                      color: "#1a1a1a",
+                      fontFamily: "'Source Serif 4', serif",
+                    }}
+                  >
+                    {pct}%
+                  </span>
+                </div>
+                <div
+                  style={{
+                    height: 6,
+                    borderRadius: 3,
+                    background: "#f0f0f0",
+                    overflow: "hidden",
+                    marginBottom: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      height: "100%",
+                      borderRadius: 3,
+                      width: `${pct}%`,
+                      background: isHigh
+                        ? "linear-gradient(90deg, #e74c3c, #c0392b)"
+                        : "linear-gradient(90deg, #1a6b4f, #2ecc71)",
+                      transition: "width 1s cubic-bezier(0.16, 1, 0.3, 1)",
+                      animation: "barFill 1s cubic-bezier(0.16, 1, 0.3, 1)",
+                    }}
+                  />
+                </div>
+                <span
+                  style={{
+                    display: "inline-block",
+                    padding: "3px 10px",
+                    borderRadius: 5,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    fontFamily: "'Outfit', sans-serif",
+                    letterSpacing: "0.05em",
+                    background: isHigh ? "#fdf0f0" : "#edf9f4",
+                    color: isHigh ? "#c0392b" : "#1a6b4f",
+                    border: `1px solid ${isHigh ? "#f5c6c6" : "#b8e6d0"}`,
+                  }}
+                >
+                  {data.risk_level}
+                </span>
+              </>
+            )}
           </div>
         );
       })}
@@ -1184,7 +1261,10 @@ const App = () => {
                   data={prediction.predictions.random_forest}
                 />
               ) : (
-                <SiteResultsGrid predictions={prediction.predictions} />
+                <SiteResultsGrid
+                  predictions={prediction.predictions}
+                  patientData={prediction.patient_data}
+                />
               )}
             </div>
           )}
