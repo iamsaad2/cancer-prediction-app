@@ -666,7 +666,7 @@ function SiteResultsGrid({ predictions, patientData }) {
                     marginBottom: 12,
                   }}
                 >
-                  Marked as known on input — no prediction needed.
+                  Marked as known on input.
                 </div>
                 <span
                   style={{
